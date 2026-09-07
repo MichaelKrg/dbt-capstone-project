@@ -32,5 +32,20 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   airstats:
     # Config indicated by + and applies to all files under models/example/
-    example:
+    +grants:
+      select:
+        - transform
+        - reporter
+    bronze:
+      +static_analysis: strict
       +materialized: view
+    silver:
+      +static_analysis: strict
+      +materialized: table
+    gold:
+      +static_analysis: strict
+      +materialized: table
+
+data_tests:
+  +store_failures: true
+  +schema: _test_failures

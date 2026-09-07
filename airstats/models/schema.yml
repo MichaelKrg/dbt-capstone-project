@@ -1,0 +1,91 @@
+models:
+  - name: silver_airports
+    description: Cleansed table with all available airports
+    columns:
+      - name: airport_ident
+        description: Identification of the airport
+        data_tests:
+          - unique
+          - not_null
+      - name: airport_type
+        description: '{{ doc("doc_airport_type") }}'
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['heliport',
+                  'large_airport',
+                  'closed',
+                  'seaplane_base',
+                  'balloonport',
+                  'small_airport',
+                  'medium_airport']
+      - name: airport_name
+        description: Name of the airport
+        data_tests:
+          - not_null
+      - name: airport_lat
+        description: Latitude of the airport
+      - name: airport_long
+        description: Longitude of the airport
+  - name: silver_airport_comments
+    description: Comments on the airports
+    columns:
+      - name: comment_id
+        description: Id of the comment
+        data_tests:
+          - unique
+          - not_null
+      - name: airport_ident
+        description: Referenced airport
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_airports')
+                field: airport_ident
+                config:
+                  severity: warn
+  - name: silver_runways
+    description: Holds information about the runwaqys of airports
+    columns:
+      - name: runway_id
+        description: Unique identifier of the runway
+        data_tests:
+          - unique
+          - not_null
+      - name: airport_ident
+        description: Referenced airport
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_airports')
+                field: airport_ident
+              config:
+                severity: warn
+      - name: runway_width_ft
+        description: Width of the runway in feet
+      - name: runway_length_ft
+        description: Length of the runway in feet
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 150
+                max_value: 45000
+              config:
+                severity: warn
+      - name: runway_surface
+        description: Describes the surface of the runway
+      - name: runway_closed
+        description: Tells if the runway is open (0) or closed (1)
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              arguments:
+                value_set: [0, 1] # use dbt_expectations instead of accepted_values
+      - name: runway_lighted
+        description: Tells if the runway is lighted (1) or not (0)
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              arguments:
+                value_set: [0, 1] # use dbt_expectations instead of accepted_values
